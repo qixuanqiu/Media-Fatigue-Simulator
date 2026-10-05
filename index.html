@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Fatigue Simulator: From Inundation to Silence</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-overload: #ef4444;
+            --accent-avoidance: #10b981;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            border: 1px solid var(--border-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        p.subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 0;
+            font-style: italic;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .toggle-btn.active-overload {
+            background: var(--card-bg);
+            color: var(--accent-overload);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .toggle-btn.active-avoidance {
+            background: var(--card-bg);
+            color: var(--accent-avoidance);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .media-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 锁死海报显示区域高度为 500px，确保两张海报完全一致 */
+        .poster-wrapper {
+            height: 500px;
+            width: 100%;
+            background-color: #000000;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .poster-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        audio {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .text-column {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .text-column h3 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+        }
+
+        .text-column ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .text-column li {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .text-column li strong {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Media Fatigue Simulator: From Inundation to Silence</h1>
+        <p class="subtitle">Toggle the media environment state below to observe the synchronized evolution of visual posters, theoretical explanations, and acoustic soundscapes.</p>
+    </header>
+
+    <div class="controls">
+        <button id="btn-overload" class="toggle-btn active-overload" onclick="setPhase('overload')">Phase I: Information Overload</button>
+        <button id="btn-avoidance" class="toggle-btn" onclick="setPhase('avoidance')">Phase II: Active News Avoidance</button>
+    </div>
+
+    <div class="grid">
+        <div class="media-column">
+            <div class="poster-wrapper">
+                <img id="poster" src="https://i.ibb.co/zhggw1HV/lill-LGh-LMWl4-X1-V.jpg" alt="Conceptual Poster">
+            </div>
+            <audio id="audio-player" controls autoplay src="https://files.catbox.moe/7wjrsv.wav"></audio>
+        </div>
+
+        <div class="text-column" id="text-content">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const data = {
+        overload: {
+            poster: "https://i.ibb.co/zhggw1HV/lill-LGh-LMWl4-X1-V.jpg",
+            audio: "https://files.catbox.moe/7wjrsv.wav",
+            title: "⚠️ Status: Algorithmic Inundation & Cognitive Exhaustion",
+            titleColor: "var(--accent-overload)",
+            details: [
+                { label: "Media Characteristics", text: "High saturation, frequent notifications, algorithmic pushes, attention exploitation." },
+                { label: "Audience Psychology", text: "Information anxiety, emotional depletion, sensory overload." },
+                { label: "Communication Mechanism", text: "Low-quality viral content continuously drains cognitive bandwidth, creating an environment of perpetual psychological tension." }
+            ]
+        },
+        avoidance: {
+            poster: "https://i.ibb.co/vCTcL98x/poster-b.jpg",
+            audio: "https://files.catbox.moe/2vw0ri.mp3",
+            title: "🍃 Status: Active News Avoidance & Digital Sanctuary",
+            titleColor: "var(--accent-avoidance)",
+            details: [
+                { label: "Media Characteristics", text: "Negative space, acoustic disconnection, minimalist cognitive environment." },
+                { label: "Audience Psychology", text: "Restoration of order, psychological peace, cognitive self-preservation." },
+                { label: "Communication Mechanism", text: "Users deliberately \"unplug,\" framing non-knowledge as an active defense strategy against algorithmic noise." }
+            ]
+        }
+    };
+
+    function setPhase(phase) {
+        const btnOverload = document.getElementById('btn-overload');
+        const btnAvoidance = document.getElementById('btn-avoidance');
+        const posterImg = document.getElementById('poster');
+        const audioPlayer = document.getElementById('audio-player');
+        const textContainer = document.getElementById('text-content');
+
+        const currentData = data[phase];
+
+        // Toggle button states
+        if (phase === 'overload') {
+            btnOverload.className = 'toggle-btn active-overload';
+            btnAvoidance.className = 'toggle-btn';
+        } else {
+            btnOverload.className = 'toggle-btn';
+            btnAvoidance.className = 'toggle-btn active-avoidance';
+        }
+
+        // Update media
+        posterImg.src = currentData.poster;
+        audioPlayer.src = currentData.audio;
+        audioPlayer.play().catch(() => {
+            // Autoplay policy fallback
+        });
+
+        // Update text
+        let listItems = currentData.details.map(item => 
+            `<li><strong>${item.label}</strong>: ${item.text}</li>`
+        ).join('');
+
+        textContainer.innerHTML = `
+            <h3 style="color: ${currentData.titleColor}">${currentData.title}</h3>
+            <ul>${listItems}</ul>
+        `;
+    }
+
+    // Initialize with Phase I
+    setPhase('overload');
+</script>
+
+</body>
+</html>
