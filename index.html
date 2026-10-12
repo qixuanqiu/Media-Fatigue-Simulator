@@ -43,7 +43,7 @@
             font-size: 0.95rem;
         }
 
-        /* 控制栏 & 主体性光谱 (Agency Spectrum) */
+        /* 控制栏 & Agency Spectrum */
         .control-panel {
             background-color: #1e293b;
             border: 1px solid #334155;
@@ -76,7 +76,7 @@
             box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
         }
 
-        /* 理论支持：Agency Spectrum Indicator (Wu-Ouyang, 2026) */
+        /* Agency Spectrum Indicator (Wu-Ouyang, 2026) */
         .spectrum-container {
             width: 100%;
             max-width: 600px;
@@ -111,7 +111,7 @@
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 主内容网格 */
+        /* 主内容容器 */
         .main-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -136,7 +136,7 @@
             gap: 15px;
         }
 
-        /* 海报防抖与高度锁死 */
+        /* 海报高度锁死与防抖 */
         .poster-wrapper {
             height: 500px;
             width: 100%;
@@ -190,14 +190,13 @@
             margin-bottom: 2px;
         }
 
-        /* 音频播放器 */
         audio {
             width: 100%;
             margin-top: auto;
             border-radius: 6px;
         }
 
-        /* 理论微控件：Curation Signal Controls (Wu-Ouyang, 2026) */
+        /* 策展交互微控件 (Phase II 激活) */
         .curation-controls {
             display: none;
             flex-wrap: wrap;
@@ -241,7 +240,7 @@
     <div class="control-panel">
         <button id="switchBtn" class="switch-btn">Switch to Phase II: Active News Avoidance</button>
         
-        <!-- Agency Spectrum Bar (Wu-Ouyang 2026 Framework) -->
+        <!-- Agency Spectrum Bar -->
         <div class="spectrum-container">
             <div class="spectrum-labels">
                 <span>High Algorithmic Agency (Personalization)</span>
@@ -258,9 +257,11 @@
         <!-- 海报卡片 -->
         <div class="card">
             <div class="poster-wrapper">
-                <img id="posterImg" src="https://i.ibb.co/L5T1Y4k/phase1.jpg" alt="Phase Poster">
+                <!-- 注意：此处使用仓库同级本地文件 ./phase1.jpg -->
+                <img id="posterImg" src="./phase1.jpg" alt="Phase Poster">
             </div>
-            <audio id="audioPlayer" controls loop src="https://files.catbox.moe/8s9o7f.mp3"></audio>
+            <!-- 注意：此处使用仓库同级本地文件 ./audio1.mp3 -->
+            <audio id="audioPlayer" controls loop src="./audio1.mp3"></audio>
         </div>
 
         <!-- 学术文本卡片 -->
@@ -285,7 +286,7 @@
                 </li>
             </ul>
 
-            <!-- 策展信号交互按钮 (在 Phase II 激活) -->
+            <!-- 策展信号交互微控件 -->
             <div id="curationControls" class="curation-controls">
                 <p style="font-size:0.75rem; color:#94a3b8; width:100%;">Emit Personal Curation Signals to Algorithm:</p>
                 <button class="signal-btn" onclick="emitSignal('Block Signal Sent: Limiting Expansiveness')">[ Block Feed Signal ]</button>
@@ -297,7 +298,7 @@
     </div>
 
     <script>
-        // 数据状态机 (包含 Wu-Ouyang 2026 策展理论)
+        // 本地相对路径映射
         const phases = {
             1: {
                 badge: "Phase I: Algorithmic Inundation",
@@ -308,8 +309,8 @@
                 btnBg: "linear-gradient(135deg, #ef4444, #dc2626)",
                 pointerLeft: "0%",
                 pointerBg: "#ef4444",
-                posterSrc: "https://i.ibb.co/L5T1Y4k/phase1.jpg",
-                audioSrc: "https://files.catbox.moe/8s9o7f.mp3",
+                posterSrc: "./phase1.jpg",
+                audioSrc: "./audio1.mp3",
                 showCuration: false,
                 theories: [
                     { title: "Cognitive Load Theory (Sweller)", text: "High-density, continuous information streams overwhelm working memory capacity, leading to cognitive fatigue and emotional depletion." },
@@ -326,8 +327,8 @@
                 btnBg: "linear-gradient(135deg, #10b981, #059669)",
                 pointerLeft: "33.33%",
                 pointerBg: "#10b981",
-                posterSrc: "https://i.ibb.co/v4x04q2/phase2.jpg",
-                audioSrc: "https://files.catbox.moe/z7m99b.mp3",
+                posterSrc: "./phase2.jpg",
+                audioSrc: "./audio2.mp3",
                 showCuration: true,
                 theories: [
                     { title: "Personal Curation as Communicative Act (Wu-Ouyang, 2026)", text: "Unfriending, blocking, and hiding content are not mere passivity, but active signals sent to algorithmic and social curators to reshape feeds." },
@@ -353,7 +354,6 @@
             currentPhase = currentPhase === 1 ? 2 : 1;
             const data = phases[currentPhase];
 
-            // 渐变更新海报与音频
             posterImg.style.opacity = 0;
             setTimeout(() => {
                 posterImg.src = data.posterSrc;
@@ -363,7 +363,6 @@
             audioPlayer.src = data.audioSrc;
             audioPlayer.play();
 
-            // 更新 UI 标识与描述
             statusBadge.textContent = data.badge;
             statusBadge.style.backgroundColor = data.badgeBg;
             statusBadge.style.color = data.badgeColor;
@@ -371,15 +370,12 @@
             switchBtn.textContent = data.btnText;
             switchBtn.style.background = data.btnBg;
 
-            // 更新 Agency Spectrum 光标
             spectrumPointer.style.left = data.pointerLeft;
             spectrumPointer.style.backgroundColor = data.pointerBg;
 
-            // 控制策展微控件显示
             curationControls.style.display = data.showCuration ? "flex" : "none";
             signalFeedback.textContent = "";
 
-            // 动态更新学术文本
             theoryList.innerHTML = data.theories.map(t => `
                 <li>
                     <strong>${t.title}</strong>
@@ -388,7 +384,6 @@
             `).join('');
         });
 
-        // 策展信号发射反馈函数
         function emitSignal(msg) {
             signalFeedback.textContent = "✓ Signal Transmitted: " + msg;
             setTimeout(() => {
