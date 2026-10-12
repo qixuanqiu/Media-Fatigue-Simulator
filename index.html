@@ -52,7 +52,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
             width: 100%;
             max-width: 900px;
             margin-bottom: 25px;
@@ -79,18 +79,43 @@
         /* Agency Spectrum Indicator (Wu-Ouyang, 2026) */
         .spectrum-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 750px;
             background-color: #0f172a;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 0.75rem;
-            color: #94a3b8;
+            border-radius: 8px;
+            padding: 10px 14px;
+            border: 1px solid #334155;
         }
 
+        /* 可点击的光谱按钮组 */
         .spectrum-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 4px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .spectrum-btn {
+            background-color: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 6px 4px;
+            font-size: 0.72rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .spectrum-btn:hover {
+            background-color: #334155;
+            color: #f8fafc;
+            border-color: #64748b;
+        }
+
+        .spectrum-btn.active {
+            color: #ffffff;
+            font-weight: 600;
+            border-color: #38bdf8;
         }
 
         .spectrum-bar {
@@ -108,7 +133,7 @@
             height: 100%;
             background: #ef4444;
             border-radius: 3px;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* 主内容容器 */
@@ -153,7 +178,7 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.3s ease;
         }
 
         .text-card h2 {
@@ -196,7 +221,7 @@
             border-radius: 6px;
         }
 
-        /* 策展交互微控件 (Phase II 激活) */
+        /* 策展交互微控件 */
         .curation-controls {
             display: none;
             flex-wrap: wrap;
@@ -238,14 +263,14 @@
     </header>
 
     <div class="control-panel">
-        <button id="switchBtn" class="switch-btn">Switch to Phase II: Active News Avoidance</button>
+        <button id="switchBtn" class="switch-btn">Switch Phase</button>
         
-        <!-- Agency Spectrum Bar -->
+        <!-- Agency Spectrum (直观的三阶按钮组合) -->
         <div class="spectrum-container">
             <div class="spectrum-labels">
-                <span>High Algorithmic Agency (Personalization)</span>
-                <span>Hybrid Agency (Personal Curation)</span>
-                <span>High User Agency (Customization)</span>
+                <button class="spectrum-btn active" id="btnPhase1" onclick="updateUI(1)">High Algorithmic Agency<br>(Personalization)</button>
+                <button class="spectrum-btn" id="btnPhase2" onclick="updateUI(2)">Hybrid Agency<br>(Personal Curation)</button>
+                <button class="spectrum-btn" id="btnPhase3" onclick="updateUI(3)">High User Agency<br>(Customization)</button>
             </div>
             <div class="spectrum-bar">
                 <div id="spectrumPointer" class="spectrum-pointer" style="left: 0%;"></div>
@@ -257,10 +282,8 @@
         <!-- 海报卡片 -->
         <div class="card">
             <div class="poster-wrapper">
-                <!-- 注意：此处使用仓库同级本地文件 ./phase1.jpg -->
                 <img id="posterImg" src="./phase1.jpg" alt="Phase Poster">
             </div>
-            <!-- 注意：此处使用仓库同级本地文件 ./audio1.mp3 -->
             <audio id="audioPlayer" controls loop src="./audio1.mp3"></audio>
         </div>
 
@@ -272,21 +295,10 @@
             </div>
 
             <ul id="theoryList" class="theory-list">
-                <li>
-                    <strong>Cognitive Load Theory (Sweller)</strong>
-                    High-density, continuous information streams overwhelm working memory capacity, leading to cognitive fatigue and emotional depletion.
-                </li>
-                <li>
-                    <strong>Attention Economy (Simon)</strong>
-                    Algorithmic recommendation feeds capture and exploit audience attention bandwidth through high-frequency emotional triggers.
-                </li>
-                <li>
-                    <strong>High Algorithmic Agency (Wu-Ouyang, 2026)</strong>
-                    The user remains a passive consumer under systemic personalization, with limited control over content sorting and feed exposure.
-                </li>
+                <!-- 动态载入 -->
             </ul>
 
-            <!-- 策展信号交互微控件 -->
+            <!-- 策展信号微控件 -->
             <div id="curationControls" class="curation-controls">
                 <p style="font-size:0.75rem; color:#94a3b8; width:100%;">Emit Personal Curation Signals to Algorithm:</p>
                 <button class="signal-btn" onclick="emitSignal('Block Signal Sent: Limiting Expansiveness')">[ Block Feed Signal ]</button>
@@ -298,14 +310,13 @@
     </div>
 
     <script>
-        // 本地相对路径映射
         const phases = {
             1: {
                 badge: "Phase I: Algorithmic Inundation",
                 badgeBg: "#7f1d1d",
                 badgeColor: "#fca5a5",
                 title: "Information Overload & Cognitive Exhaustion",
-                btnText: "Switch to Phase II: Active News Avoidance & Personal Curation",
+                btnText: "Switch to Phase II: Personal Curation",
                 btnBg: "linear-gradient(135deg, #ef4444, #dc2626)",
                 pointerLeft: "0%",
                 pointerBg: "#ef4444",
@@ -323,7 +334,7 @@
                 badgeBg: "#065f46",
                 badgeColor: "#a7f3d0",
                 title: "Active Avoidance as a Communicative Act",
-                btnText: "Switch to Phase I: Information Overload",
+                btnText: "Switch to Phase III: Full Customization",
                 btnBg: "linear-gradient(135deg, #10b981, #059669)",
                 pointerLeft: "33.33%",
                 pointerBg: "#10b981",
@@ -334,6 +345,23 @@
                     { title: "Personal Curation as Communicative Act (Wu-Ouyang, 2026)", text: "Unfriending, blocking, and hiding content are not mere passivity, but active signals sent to algorithmic and social curators to reshape feeds." },
                     { title: "Active News Avoidance & Limiting Curation (Skovsgaard; Wu-Ouyang)", text: "Refusing or limiting incoming information serves as a proactive defense strategy to guard psychological health and restore autonomy." },
                     { title: "Attention Restoration Theory (Kaplan)", text: "Reducing visual noise and engaging in minimal ambient soundscapes facilitates mental recovery and restores depleted cognitive bandwidth." }
+                ]
+            },
+            3: {
+                badge: "Phase III: Pure Customization & Sovereignty",
+                badgeBg: "#1e3a8a",
+                badgeColor: "#93c5fd",
+                title: "Full User Agency: Digital Unplugging",
+                btnText: "Reset to Phase I: Algorithmic Inundation",
+                btnBg: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                pointerLeft: "66.66%",
+                pointerBg: "#3b82f6",
+                posterSrc: "./phase2.jpg",
+                audioSrc: "./audio2.mp3",
+                showCuration: true,
+                theories: [
+                    { title: "Full Customization (Sundar & Marathe; Wu-Ouyang, 2026)", text: "Represents maximum human agency where algorithms are completely bypassed, allowing complete user control over interface and content." },
+                    { title: "Digital Sanctuary & Total Unplugging", text: "At maximum agency, the audience fully shapes their information environment, neutralizing algorithmic noise entirely." }
                 ]
             }
         };
@@ -350,19 +378,22 @@
         const curationControls = document.getElementById('curationControls');
         const signalFeedback = document.getElementById('signalFeedback');
 
-        switchBtn.addEventListener('click', () => {
-            currentPhase = currentPhase === 1 ? 2 : 1;
+        // 核心更新 UI 函数
+        function updateUI(phaseNum) {
+            currentPhase = phaseNum;
             const data = phases[currentPhase];
 
+            // 更新海报与音频
             posterImg.style.opacity = 0;
             setTimeout(() => {
                 posterImg.src = data.posterSrc;
                 posterImg.style.opacity = 1;
-            }, 200);
+            }, 150);
 
             audioPlayer.src = data.audioSrc;
-            audioPlayer.play();
+            audioPlayer.play().catch(() => {}); 
 
+            // 更新文本内容与样式
             statusBadge.textContent = data.badge;
             statusBadge.style.backgroundColor = data.badgeBg;
             statusBadge.style.color = data.badgeColor;
@@ -370,19 +401,40 @@
             switchBtn.textContent = data.btnText;
             switchBtn.style.background = data.btnBg;
 
+            // 更新红/绿/蓝色滑动条位置
             spectrumPointer.style.left = data.pointerLeft;
             spectrumPointer.style.backgroundColor = data.pointerBg;
 
+            // 高亮当前选中的光谱按钮
+            document.querySelectorAll('.spectrum-btn').forEach((btn, idx) => {
+                if (idx === phaseNum - 1) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // 控制微控件显示
             curationControls.style.display = data.showCuration ? "flex" : "none";
             signalFeedback.textContent = "";
 
+            // 载入理论列表
             theoryList.innerHTML = data.theories.map(t => `
                 <li>
                     <strong>${t.title}</strong>
                     ${t.text}
                 </li>
             `).join('');
+        }
+
+        // 顶部大按钮顺序循环切换 (1 -> 2 -> 3 -> 1)
+        switchBtn.addEventListener('click', () => {
+            let nextPhase = currentPhase >= 3 ? 1 : currentPhase + 1;
+            updateUI(nextPhase);
         });
+
+        // 初始化加载 Phase 1
+        updateUI(1);
 
         function emitSignal(msg) {
             signalFeedback.textContent = "✓ Signal Transmitted: " + msg;
