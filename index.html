@@ -79,14 +79,14 @@
         /* Agency Spectrum Indicator (Wu-Ouyang, 2026) */
         .spectrum-container {
             width: 100%;
-            max-width: 750px;
+            max-width: 800px;
             background-color: #0f172a;
             border-radius: 8px;
             padding: 10px 14px;
             border: 1px solid #334155;
         }
 
-        /* 可点击的光谱按钮组 */
+        /* 可点击的 3 阶光谱按钮 */
         .spectrum-labels {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -98,12 +98,13 @@
             background-color: #1e293b;
             color: #94a3b8;
             border: 1px solid #334155;
-            padding: 6px 4px;
-            font-size: 0.72rem;
+            padding: 8px 4px;
+            font-size: 0.75rem;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
+            line-height: 1.3;
         }
 
         .spectrum-btn:hover {
@@ -116,6 +117,7 @@
             color: #ffffff;
             font-weight: 600;
             border-color: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
         }
 
         .spectrum-bar {
@@ -161,7 +163,7 @@
             gap: 15px;
         }
 
-        /* 海报高度锁死与防抖 */
+        /* 海报防抖与高度锁死 */
         .poster-wrapper {
             height: 500px;
             width: 100%;
@@ -265,7 +267,7 @@
     <div class="control-panel">
         <button id="switchBtn" class="switch-btn">Switch Phase</button>
         
-        <!-- Agency Spectrum (直观的三阶按钮组合) -->
+        <!-- Agency Spectrum (Wu-Ouyang 2026 Framework) -->
         <div class="spectrum-container">
             <div class="spectrum-labels">
                 <button class="spectrum-btn active" id="btnPhase1" onclick="updateUI(1)">High Algorithmic Agency<br>(Personalization)</button>
@@ -284,7 +286,7 @@
             <div class="poster-wrapper">
                 <img id="posterImg" src="./phase1.jpg" alt="Phase Poster">
             </div>
-            <audio id="audioPlayer" controls loop src="./audio1.mp3"></audio>
+            <audio id="audioPlayer" controls loop src="./audio1.wav"></audio>
         </div>
 
         <!-- 学术文本卡片 -->
@@ -295,7 +297,7 @@
             </div>
 
             <ul id="theoryList" class="theory-list">
-                <!-- 动态载入 -->
+                <!-- 动态载入学术文本 -->
             </ul>
 
             <!-- 策展信号微控件 -->
@@ -310,6 +312,7 @@
     </div>
 
     <script>
+        // 三阶主体性映射数据 (适配本地真实上传的文件路径)
         const phases = {
             1: {
                 badge: "Phase I: Algorithmic Inundation",
@@ -321,7 +324,7 @@
                 pointerLeft: "0%",
                 pointerBg: "#ef4444",
                 posterSrc: "./phase1.jpg",
-                audioSrc: "./audio1.mp3",
+                audioSrc: "./audio1.wav", // 特别适配你的 .wav 音频
                 showCuration: false,
                 theories: [
                     { title: "Cognitive Load Theory (Sweller)", text: "High-density, continuous information streams overwhelm working memory capacity, leading to cognitive fatigue and emotional depletion." },
@@ -356,8 +359,8 @@
                 btnBg: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
                 pointerLeft: "66.66%",
                 pointerBg: "#3b82f6",
-                posterSrc: "./phase2.jpg",
-                audioSrc: "./audio2.mp3",
+                posterSrc: "./phase3.jpg",
+                audioSrc: "./audio3.mp3",
                 showCuration: true,
                 theories: [
                     { title: "Full Customization (Sundar & Marathe; Wu-Ouyang, 2026)", text: "Represents maximum human agency where algorithms are completely bypassed, allowing complete user control over interface and content." },
@@ -378,22 +381,26 @@
         const curationControls = document.getElementById('curationControls');
         const signalFeedback = document.getElementById('signalFeedback');
 
-        // 核心更新 UI 函数
+        // 核心切换函数
         function updateUI(phaseNum) {
             currentPhase = phaseNum;
             const data = phases[currentPhase];
 
-            // 更新海报与音频
+            // 切换海报（淡入淡出动画）
             posterImg.style.opacity = 0;
             setTimeout(() => {
                 posterImg.src = data.posterSrc;
                 posterImg.style.opacity = 1;
             }, 150);
 
+            // 切换并播放音频
             audioPlayer.src = data.audioSrc;
-            audioPlayer.play().catch(() => {}); 
+            audioPlayer.load();
+            audioPlayer.play().catch(err => {
+                console.warn("Autoplay notice: click player to listen.", err);
+            });
 
-            // 更新文本内容与样式
+            // 更新文本与样式
             statusBadge.textContent = data.badge;
             statusBadge.style.backgroundColor = data.badgeBg;
             statusBadge.style.color = data.badgeColor;
@@ -401,11 +408,11 @@
             switchBtn.textContent = data.btnText;
             switchBtn.style.background = data.btnBg;
 
-            // 更新红/绿/蓝色滑动条位置
+            // 滑块平滑过渡到 0% -> 33.33% -> 66.66%
             spectrumPointer.style.left = data.pointerLeft;
             spectrumPointer.style.backgroundColor = data.pointerBg;
 
-            // 高亮当前选中的光谱按钮
+            // 按钮高亮状态更新
             document.querySelectorAll('.spectrum-btn').forEach((btn, idx) => {
                 if (idx === phaseNum - 1) {
                     btn.classList.add('active');
@@ -418,7 +425,7 @@
             curationControls.style.display = data.showCuration ? "flex" : "none";
             signalFeedback.textContent = "";
 
-            // 载入理论列表
+            // 渲染学术理论列表
             theoryList.innerHTML = data.theories.map(t => `
                 <li>
                     <strong>${t.title}</strong>
@@ -427,15 +434,18 @@
             `).join('');
         }
 
-        // 顶部大按钮顺序循环切换 (1 -> 2 -> 3 -> 1)
+        // 顺序循环点击事件 (Phase 1 -> 2 -> 3 -> 1)
         switchBtn.addEventListener('click', () => {
             let nextPhase = currentPhase >= 3 ? 1 : currentPhase + 1;
             updateUI(nextPhase);
         });
 
         // 初始化加载 Phase 1
-        updateUI(1);
+        window.addEventListener('DOMContentLoaded', () => {
+            updateUI(1);
+        });
 
+        // 策展信号发射函数
         function emitSignal(msg) {
             signalFeedback.textContent = "✓ Signal Transmitted: " + msg;
             setTimeout(() => {
