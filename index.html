@@ -76,7 +76,7 @@
             box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
         }
 
-        /* Agency Spectrum Indicator (Wu-Ouyang, 2026) */
+        /* Agency Spectrum Indicator */
         .spectrum-container {
             width: 100%;
             max-width: 800px;
@@ -86,7 +86,6 @@
             border: 1px solid #334155;
         }
 
-        /* 可点击的 3 阶光谱按钮 */
         .spectrum-labels {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -163,7 +162,7 @@
             gap: 15px;
         }
 
-        /* 海报防抖与高度锁死 */
+        /* 海报高度锁死 */
         .poster-wrapper {
             height: 500px;
             width: 100%;
@@ -223,7 +222,7 @@
             border-radius: 6px;
         }
 
-        /* 策展交互微控件 */
+        /* 策展交互微控件 & 叠加信号样式 */
         .curation-controls {
             display: none;
             flex-wrap: wrap;
@@ -249,11 +248,35 @@
             color: #0f172a;
         }
 
-        .signal-feedback {
+        .signal-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #64748b;
+            color: #64748b;
+        }
+
+        /* 叠加日志容器 */
+        .signal-log-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .signal-log-item {
             font-size: 0.75rem;
             color: #10b981;
-            margin-top: 5px;
-            min-height: 18px;
+            background-color: #064e3b22;
+            border-left: 2px solid #10b981;
+            padding: 4px 8px;
+            border-radius: 2px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-3px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -286,7 +309,8 @@
             <div class="poster-wrapper">
                 <img id="posterImg" src="./phase1.jpg" alt="Phase Poster">
             </div>
-            <audio id="audioPlayer" controls loop src="./audio1.wav"></audio>
+            <!-- 音频更新为 mp3 以保证浏览器百分百播放兼容性 -->
+            <audio id="audioPlayer" controls loop src="./audio1.mp3"></audio>
         </div>
 
         <!-- 学术文本卡片 -->
@@ -297,22 +321,23 @@
             </div>
 
             <ul id="theoryList" class="theory-list">
-                <!-- 动态载入学术文本 -->
+                <!-- 动态渲染理论文本 -->
             </ul>
 
             <!-- 策展信号微控件 -->
             <div id="curationControls" class="curation-controls">
                 <p style="font-size:0.75rem; color:#94a3b8; width:100%;">Emit Personal Curation Signals to Algorithm:</p>
-                <button class="signal-btn" onclick="emitSignal('Block Signal Sent: Limiting Expansiveness')">[ Block Feed Signal ]</button>
-                <button class="signal-btn" onclick="emitSignal('Attention Shifted: Reduced News Attentiveness')">[ Reduce News Attentiveness ]</button>
-                <button class="signal-btn" onclick="emitSignal('Disconnected: Repertoire Pruned')">[ Multiplatform Disconnect ]</button>
-                <div id="signalFeedback" class="signal-feedback"></div>
+                <button id="sigBtn1" class="signal-btn" onclick="emitSignal('sigBtn1', 'Block Signal Sent: Limiting Expansiveness')">[ Block Feed Signal ]</button>
+                <button id="sigBtn2" class="signal-btn" onclick="emitSignal('sigBtn2', 'Attention Shifted: Reduced News Attentiveness')">[ Reduce News Attentiveness ]</button>
+                <button id="sigBtn3" class="signal-btn" onclick="emitSignal('sigBtn3', 'Disconnected: Repertoire Pruned')">[ Multiplatform Disconnect ]</button>
+                
+                <!-- 信号叠加显示日志区 -->
+                <div id="signalLog" class="signal-log-container"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // 三阶主体性映射数据 (适配本地真实上传的文件路径)
         const phases = {
             1: {
                 badge: "Phase I: Algorithmic Inundation",
@@ -324,7 +349,7 @@
                 pointerLeft: "0%",
                 pointerBg: "#ef4444",
                 posterSrc: "./phase1.jpg",
-                audioSrc: "./audio1.wav", // 特别适配你的 .wav 音频
+                audioSrc: "./audio1.mp3", // 请确保把 audio1.wav 转成 mp3 上传
                 showCuration: false,
                 theories: [
                     { title: "Cognitive Load Theory (Sweller)", text: "High-density, continuous information streams overwhelm working memory capacity, leading to cognitive fatigue and emotional depletion." },
@@ -361,7 +386,7 @@
                 pointerBg: "#3b82f6",
                 posterSrc: "./phase3.jpg",
                 audioSrc: "./audio3.mp3",
-                showCuration: true,
+                showCuration: false,
                 theories: [
                     { title: "Full Customization (Sundar & Marathe; Wu-Ouyang, 2026)", text: "Represents maximum human agency where algorithms are completely bypassed, allowing complete user control over interface and content." },
                     { title: "Digital Sanctuary & Total Unplugging", text: "At maximum agency, the audience fully shapes their information environment, neutralizing algorithmic noise entirely." }
@@ -370,6 +395,7 @@
         };
 
         let currentPhase = 1;
+        let emittedCount = 0; // 已发射信号计数器
 
         const switchBtn = document.getElementById('switchBtn');
         const statusBadge = document.getElementById('statusBadge');
@@ -379,28 +405,27 @@
         const audioPlayer = document.getElementById('audioPlayer');
         const spectrumPointer = document.getElementById('spectrumPointer');
         const curationControls = document.getElementById('curationControls');
-        const signalFeedback = document.getElementById('signalFeedback');
+        const signalLog = document.getElementById('signalLog');
 
-        // 核心切换函数
         function updateUI(phaseNum) {
             currentPhase = phaseNum;
             const data = phases[currentPhase];
 
-            // 切换海报（淡入淡出动画）
+            // 切换海报
             posterImg.style.opacity = 0;
             setTimeout(() => {
                 posterImg.src = data.posterSrc;
                 posterImg.style.opacity = 1;
             }, 150);
 
-            // 切换并播放音频
+            // 切换音频
             audioPlayer.src = data.audioSrc;
             audioPlayer.load();
             audioPlayer.play().catch(err => {
-                console.warn("Autoplay notice: click player to listen.", err);
+                console.warn("Autoplay blocked by browser policy:", err);
             });
 
-            // 更新文本与样式
+            // 更新文本
             statusBadge.textContent = data.badge;
             statusBadge.style.backgroundColor = data.badgeBg;
             statusBadge.style.color = data.badgeColor;
@@ -408,24 +433,19 @@
             switchBtn.textContent = data.btnText;
             switchBtn.style.background = data.btnBg;
 
-            // 滑块平滑过渡到 0% -> 33.33% -> 66.66%
             spectrumPointer.style.left = data.pointerLeft;
             spectrumPointer.style.backgroundColor = data.pointerBg;
 
-            // 按钮高亮状态更新
             document.querySelectorAll('.spectrum-btn').forEach((btn, idx) => {
-                if (idx === phaseNum - 1) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+                btn.classList.toggle('active', idx === phaseNum - 1);
             });
 
-            // 控制微控件显示
+            // 切换阶段时重置/显示微控件
             curationControls.style.display = data.showCuration ? "flex" : "none";
-            signalFeedback.textContent = "";
+            if (phaseNum !== 2) {
+                resetSignalControls();
+            }
 
-            // 渲染学术理论列表
             theoryList.innerHTML = data.theories.map(t => `
                 <li>
                     <strong>${t.title}</strong>
@@ -434,24 +454,54 @@
             `).join('');
         }
 
-        // 顺序循环点击事件 (Phase 1 -> 2 -> 3 -> 1)
+        // 策展信号发射逻辑（叠加显示 + 自动跳转 Phase III）
+        function emitSignal(btnId, msg) {
+            const btn = document.getElementById(btnId);
+            if (btn.classList.contains('disabled')) return;
+
+            // 禁用已点击的按钮
+            btn.classList.add('disabled');
+            emittedCount++;
+
+            // 叠加创建日志条目
+            const logItem = document.createElement('div');
+            logItem.className = 'signal-log-item';
+            logItem.textContent = `✓ Signal ${emittedCount}: ${msg}`;
+            signalLog.appendChild(logItem);
+
+            // 当 3 个策展信号全被发射后，提示并自动跳转到 Phase III
+            if (emittedCount >= 3) {
+                const autoJumpNotice = document.createElement('div');
+                autoJumpNotice.className = 'signal-log-item';
+                autoJumpNotice.style.borderColor = '#38bdf8';
+                autoJumpNotice.style.color = '#38bdf8';
+                autoJumpNotice.style.fontWeight = 'bold';
+                autoJumpNotice.textContent = "⚡ All curation signals sent! Transitioning to Full Agency...";
+                signalLog.appendChild(autoJumpNotice);
+
+                setTimeout(() => {
+                    updateUI(3);
+                }, 1500); // 1.5秒后自动跳转
+            }
+        }
+
+        function resetSignalControls() {
+            emittedCount = 0;
+            signalLog.innerHTML = "";
+            ['sigBtn1', 'sigBtn2', 'sigBtn3'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.classList.remove('disabled');
+            });
+        }
+
         switchBtn.addEventListener('click', () => {
             let nextPhase = currentPhase >= 3 ? 1 : currentPhase + 1;
             updateUI(nextPhase);
         });
 
-        // 初始化加载 Phase 1
         window.addEventListener('DOMContentLoaded', () => {
             updateUI(1);
         });
-
-        // 策展信号发射函数
-        function emitSignal(msg) {
-            signalFeedback.textContent = "✓ Signal Transmitted: " + msg;
-            setTimeout(() => {
-                signalFeedback.textContent = "";
-            }, 3000);
-        }
     </script>
 </body>
 </html>
