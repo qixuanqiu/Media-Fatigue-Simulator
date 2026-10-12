@@ -277,13 +277,13 @@
     </header>
 
     <div class="control-panel">
-        <button id="switchBtn" class="switch-btn">Switch Phase</button>
+        <button id="switchBtn" class="switch-btn">Switch to Phase II: Personal Curation</button>
         
         <div class="spectrum-container">
             <div class="spectrum-labels">
-                <button class="spectrum-btn active" id="btn1" onclick="updateUI(1)">High Algorithmic Agency<br>(Personalization)</button>
-                <button class="spectrum-btn" id="btn2" onclick="updateUI(2)">Hybrid Agency<br>(Personal Curation)</button>
-                <button class="spectrum-btn" id="btn3" onclick="updateUI(3)">High User Agency<br>(Customization)</button>
+                <button class="spectrum-btn active" id="btn1">High Algorithmic Agency<br>(Personalization)</button>
+                <button class="spectrum-btn" id="btn2">Hybrid Agency<br>(Personal Curation)</button>
+                <button class="spectrum-btn" id="btn3">High User Agency<br>(Customization)</button>
             </div>
             <div class="spectrum-bar">
                 <div id="spectrumPointer" class="spectrum-pointer" style="left: 0%;"></div>
@@ -305,13 +305,27 @@
                 <h2 id="phaseTitle">Information Overload & Cognitive Exhaustion</h2>
             </div>
 
-            <ul id="theoryList" class="theory-list"></ul>
+            <!-- HTML 中预先填充 Phase I 默认文字描述，避免白屏/不显示 -->
+            <ul id="theoryList" class="theory-list">
+                <li>
+                    <strong>Cognitive Load Theory (Sweller)</strong>
+                    High-density, continuous information streams overwhelm working memory capacity, leading to cognitive fatigue and emotional depletion.
+                </li>
+                <li>
+                    <strong>Attention Economy & Algorithmic Capture (Simon)</strong>
+                    Algorithmic recommendation feeds capture and exploit audience attention bandwidth through high-frequency emotional triggers.
+                </li>
+                <li>
+                    <strong>High Algorithmic Agency (Wu-Ouyang, 2026)</strong>
+                    The user remains a passive consumer under systemic personalization, with limited control over content sorting and feed exposure.
+                </li>
+            </ul>
 
             <div id="curationControls" class="curation-controls">
                 <p style="font-size:0.75rem; color:#94a3b8; width:100%;">Emit Personal Curation Signals to Algorithm:</p>
-                <button id="sigBtn1" class="signal-btn" onclick="emitSignal(1, 'Block Signal Sent: Limiting Expansiveness')">[ Block Feed Signal ]</button>
-                <button id="sigBtn2" class="signal-btn" onclick="emitSignal(2, 'Attention Shifted: Reduced News Attentiveness')">[ Reduce News Attentiveness ]</button>
-                <button id="sigBtn3" class="signal-btn" onclick="emitSignal(3, 'Disconnected: Repertoire Pruned')">[ Multiplatform Disconnect ]</button>
+                <button id="sigBtn1" class="signal-btn">[ Block Feed Signal ]</button>
+                <button id="sigBtn2" class="signal-btn">[ Reduce News Attentiveness ]</button>
+                <button id="sigBtn3" class="signal-btn">[ Multiplatform Disconnect ]</button>
                 
                 <div id="signalLog" class="signal-log-container"></div>
             </div>
@@ -319,7 +333,6 @@
     </div>
 
     <script>
-        // 数据模型定义
         const phases = {
             1: {
                 badge: "Phase I: Algorithmic Inundation",
@@ -336,4 +349,188 @@
                 theories: [
                     { title: "Cognitive Load Theory (Sweller)", text: "High-density, continuous information streams overwhelm working memory capacity, leading to cognitive fatigue and emotional depletion." },
                     { title: "Attention Economy & Algorithmic Capture (Simon)", text: "Algorithmic recommendation feeds capture and exploit audience attention bandwidth through high-frequency emotional triggers." },
-                    { title: "High Algorithmic Agency (Wu-Ouyang, 2026)",
+                    { title: "High Algorithmic Agency (Wu-Ouyang, 2026)", text: "The user remains a passive consumer under systemic personalization, with limited control over content sorting and feed exposure." }
+                ]
+            },
+            2: {
+                badge: "Phase II: Personal Curation Sanctuary",
+                badgeBg: "#065f46",
+                badgeColor: "#a7f3d0",
+                title: "Active Avoidance as a Communicative Act",
+                btnText: "Switch to Phase III: Full Customization",
+                btnBg: "linear-gradient(135deg, #10b981, #059669)",
+                pointerLeft: "33.33%",
+                pointerBg: "#10b981",
+                posterSrc: "./phase2.jpg",
+                audioSrc: "./audio2.mp3",
+                showCuration: true,
+                theories: [
+                    { title: "Personal Curation as Communicative Act (Wu-Ouyang, 2026)", text: "Unfriending, blocking, and hiding content are not mere passivity, but active signals sent to algorithmic and social curators to reshape feeds." },
+                    { title: "Active News Avoidance & Limiting Curation (Skovsgaard; Wu-Ouyang)", text: "Refusing or limiting incoming information serves as a proactive defense strategy to guard psychological health and restore autonomy." },
+                    { title: "Attention Restoration Theory (Kaplan)", text: "Reducing visual noise and engaging in minimal ambient soundscapes facilitates mental recovery and restores depleted cognitive bandwidth." }
+                ]
+            },
+            3: {
+                badge: "Phase III: Pure Customization & Sovereignty",
+                badgeBg: "#1e3a8a",
+                badgeColor: "#93c5fd",
+                title: "Full User Agency: Digital Unplugging",
+                btnText: "Reset to Phase I: Algorithmic Inundation",
+                btnBg: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                pointerLeft: "66.66%",
+                pointerBg: "#3b82f6",
+                posterSrc: "./phase3.jpg",
+                audioSrc: "./audio3.mp3",
+                showCuration: false,
+                theories: [
+                    { title: "Full Customization (Sundar & Marathe; Wu-Ouyang, 2026)", text: "Represents maximum human agency where algorithms are completely bypassed, allowing complete user control over interface and content." },
+                    { title: "Digital Sanctuary & Total Unplugging", text: "At maximum agency, the audience fully shapes their information environment, neutralizing algorithmic noise entirely." }
+                ]
+            }
+        };
+
+        let currentPhase = 1;
+        let emittedSignals = new Set();
+
+        function switchPhase(phaseNum) {
+            currentPhase = phaseNum;
+            const data = phases[currentPhase];
+
+            const posterImg = document.getElementById('posterImg');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const statusBadge = document.getElementById('statusBadge');
+            const phaseTitle = document.getElementById('phaseTitle');
+            const switchBtn = document.getElementById('switchBtn');
+            const spectrumPointer = document.getElementById('spectrumPointer');
+            const curationControls = document.getElementById('curationControls');
+            const theoryList = document.getElementById('theoryList');
+
+            if (posterImg) {
+                posterImg.style.opacity = 0;
+                setTimeout(() => {
+                    posterImg.src = data.posterSrc;
+                    posterImg.style.opacity = 1;
+                }, 150);
+            }
+
+            if (audioPlayer) {
+                audioPlayer.src = data.audioSrc;
+                audioPlayer.load();
+                audioPlayer.play().catch(() => {});
+            }
+
+            if (statusBadge) {
+                statusBadge.textContent = data.badge;
+                statusBadge.style.backgroundColor = data.badgeBg;
+                statusBadge.style.color = data.badgeColor;
+            }
+
+            if (phaseTitle) phaseTitle.textContent = data.title;
+
+            if (switchBtn) {
+                switchBtn.textContent = data.btnText;
+                switchBtn.style.background = data.btnBg;
+            }
+
+            if (spectrumPointer) {
+                spectrumPointer.style.left = data.pointerLeft;
+                spectrumPointer.style.backgroundColor = data.pointerBg;
+            }
+
+            ['btn1', 'btn2', 'btn3'].forEach((id, idx) => {
+                const b = document.getElementById(id);
+                if (b) b.classList.toggle('active', idx === phaseNum - 1);
+            });
+
+            if (curationControls) {
+                curationControls.style.display = data.showCuration ? "flex" : "none";
+            }
+
+            if (phaseNum !== 2) {
+                resetSignals();
+            }
+
+            if (theoryList) {
+                theoryList.innerHTML = data.theories.map(t => `
+                    <li>
+                        <strong>${t.title}</strong>
+                        ${t.text}
+                    </li>
+                `).join('');
+            }
+        }
+
+        function emit(index, msg, btnElement) {
+            if (emittedSignals.has(index)) return;
+            emittedSignals.add(index);
+
+            if (btnElement) btnElement.classList.add('disabled');
+
+            const signalLog = document.getElementById('signalLog');
+            if (signalLog) {
+                const item = document.createElement('div');
+                item.className = 'signal-log-item';
+                item.textContent = `✓ Signal ${emittedSignals.size}: ${msg}`;
+                signalLog.appendChild(item);
+
+                if (emittedSignals.size >= 3) {
+                    const notice = document.createElement('div');
+                    notice.className = 'signal-log-item';
+                    notice.style.borderLeftColor = '#38bdf8';
+                    notice.style.color = '#38bdf8';
+                    notice.style.fontWeight = 'bold';
+                    notice.textContent = "⚡ All 3 Signals Transmitted! Empowering Full Customization...";
+                    signalLog.appendChild(notice);
+
+                    setTimeout(() => {
+                        switchPhase(3);
+                    }, 1200);
+                }
+            }
+        }
+
+        function resetSignals() {
+            emittedSignals.clear();
+            const signalLog = document.getElementById('signalLog');
+            if (signalLog) signalLog.innerHTML = "";
+            ['sigBtn1', 'sigBtn2', 'sigBtn3'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.classList.remove('disabled');
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const switchBtn = document.getElementById('switchBtn');
+            const btn1 = document.getElementById('btn1');
+            const btn2 = document.getElementById('btn2');
+            const btn3 = document.getElementById('btn3');
+
+            const sigBtn1 = document.getElementById('sigBtn1');
+            const sigBtn2 = document.getElementById('sigBtn2');
+            const sigBtn3 = document.getElementById('sigBtn3');
+
+            if (switchBtn) {
+                switchBtn.addEventListener('click', () => {
+                    let next = currentPhase >= 3 ? 1 : currentPhase + 1;
+                    switchPhase(next);
+                });
+            }
+
+            if (btn1) btn1.addEventListener('click', () => switchPhase(1));
+            if (btn2) btn2.addEventListener('click', () => switchPhase(2));
+            if (btn3) btn3.addEventListener('click', () => switchPhase(3));
+
+            if (sigBtn1) sigBtn1.addEventListener('click', () => emit(1, 'Block Signal Sent: Limiting Expansiveness', sigBtn1));
+            if (sigBtn2) sigBtn2.addEventListener('click', () => emit(2, 'Attention Shifted: Reduced News Attentiveness', sigBtn2));
+            if (sigBtn3) sigBtn3.addEventListener('click', () => emit(3, 'Disconnected: Repertoire Pruned', sigBtn3));
+
+            document.body.addEventListener('click', () => {
+                const audioPlayer = document.getElementById('audioPlayer');
+                if (audioPlayer && audioPlayer.paused) {
+                    audioPlayer.play().catch(() => {});
+                }
+            }, { once: true });
+        });
+    </script>
+</body>
+</html>
