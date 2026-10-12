@@ -43,7 +43,6 @@
             font-size: 0.95rem;
         }
 
-        /* 控制栏 & Agency Spectrum */
         .control-panel {
             background-color: #1e293b;
             border: 1px solid #334155;
@@ -76,7 +75,6 @@
             box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
         }
 
-        /* Agency Spectrum Indicator */
         .spectrum-container {
             width: 100%;
             max-width: 800px;
@@ -137,7 +135,6 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 主内容容器 */
         .main-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -162,7 +159,6 @@
             gap: 15px;
         }
 
-        /* 海报高度锁死 */
         .poster-wrapper {
             height: 500px;
             width: 100%;
@@ -222,7 +218,6 @@
             border-radius: 6px;
         }
 
-        /* 策展交互微控件 (仅 Phase II 显示) */
         .curation-controls {
             display: none;
             flex-wrap: wrap;
@@ -230,3 +225,186 @@
             margin-top: 10px;
             padding-top: 10px;
             border-top: 1px dashed #334155;
+        }
+
+        .signal-btn {
+            background-color: #0f172a;
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .signal-btn:hover {
+            background-color: #38bdf8;
+            color: #0f172a;
+        }
+
+        .signal-btn.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: #475569;
+            color: #475569;
+            background-color: #0f172a;
+        }
+
+        .signal-log-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .signal-log-item {
+            font-size: 0.75rem;
+            color: #10b981;
+            background-color: #064e3b33;
+            border-left: 3px solid #10b981;
+            padding: 6px 10px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Media Fatigue Simulator</h1>
+        <p>An Interactive Exhibition on Algorithmic Inundation and Personal Curation</p>
+    </header>
+
+    <div class="control-panel">
+        <button id="switchBtn" class="switch-btn">Switch Phase</button>
+        
+        <div class="spectrum-container">
+            <div class="spectrum-labels">
+                <button class="spectrum-btn active" id="btn1">High Algorithmic Agency<br>(Personalization)</button>
+                <button class="spectrum-btn" id="btn2">Hybrid Agency<br>(Personal Curation)</button>
+                <button class="spectrum-btn" id="btn3">High User Agency<br>(Customization)</button>
+            </div>
+            <div class="spectrum-bar">
+                <div id="spectrumPointer" class="spectrum-pointer" style="left: 0%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="card">
+            <div class="poster-wrapper">
+                <img id="posterImg" src="./phase1.jpg" alt="Phase Poster">
+            </div>
+            <audio id="audioPlayer" controls loop src="./audio1.mp3"></audio>
+        </div>
+
+        <div class="card text-card">
+            <div>
+                <span id="statusBadge" class="status-badge">Phase I: Algorithmic Inundation</span>
+                <h2 id="phaseTitle">Information Overload & Cognitive Exhaustion</h2>
+            </div>
+
+            <ul id="theoryList" class="theory-list"></ul>
+
+            <div id="curationControls" class="curation-controls">
+                <p style="font-size:0.75rem; color:#94a3b8; width:100%;">Emit Personal Curation Signals to Algorithm:</p>
+                <button id="sigBtn1" class="signal-btn">[ Block Feed Signal ]</button>
+                <button id="sigBtn2" class="signal-btn">[ Reduce News Attentiveness ]</button>
+                <button id="sigBtn3" class="signal-btn">[ Multiplatform Disconnect ]</button>
+                
+                <div id="signalLog" class="signal-log-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const phases = {
+            1: {
+                badge: "Phase I: Algorithmic Inundation",
+                badgeBg: "#7f1d1d",
+                badgeColor: "#fca5a5",
+                title: "Information Overload & Cognitive Exhaustion",
+                btnText: "Switch to Phase II: Personal Curation",
+                btnBg: "linear-gradient(135deg, #ef4444, #dc2626)",
+                pointerLeft: "0%",
+                pointerBg: "#ef4444",
+                posterSrc: "./phase1.jpg",
+                audioSrc: "./audio1.mp3",
+                showCuration: false,
+                theories: [
+                    { title: "Cognitive Load Theory (Sweller)", text: "High-density, continuous information streams overwhelm working memory capacity, leading to cognitive fatigue and emotional depletion." },
+                    { title: "Attention Economy & Algorithmic Capture (Simon)", text: "Algorithmic recommendation feeds capture and exploit audience attention bandwidth through high-frequency emotional triggers." },
+                    { title: "High Algorithmic Agency (Wu-Ouyang, 2026)", text: "The user remains a passive consumer under systemic personalization, with limited control over content sorting and feed exposure." }
+                ]
+            },
+            2: {
+                badge: "Phase II: Personal Curation Sanctuary",
+                badgeBg: "#065f46",
+                badgeColor: "#a7f3d0",
+                title: "Active Avoidance as a Communicative Act",
+                btnText: "Switch to Phase III: Full Customization",
+                btnBg: "linear-gradient(135deg, #10b981, #059669)",
+                pointerLeft: "33.33%",
+                pointerBg: "#10b981",
+                posterSrc: "./phase2.jpg",
+                audioSrc: "./audio2.mp3",
+                showCuration: true,
+                theories: [
+                    { title: "Personal Curation as Communicative Act (Wu-Ouyang, 2026)", text: "Unfriending, blocking, and hiding content are not mere passivity, but active signals sent to algorithmic and social curators to reshape feeds." },
+                    { title: "Active News Avoidance & Limiting Curation (Skovsgaard; Wu-Ouyang)", text: "Refusing or limiting incoming information serves as a proactive defense strategy to guard psychological health and restore autonomy." },
+                    { title: "Attention Restoration Theory (Kaplan)", text: "Reducing visual noise and engaging in minimal ambient soundscapes facilitates mental recovery and restores depleted cognitive bandwidth." }
+                ]
+            },
+            3: {
+                badge: "Phase III: Pure Customization & Sovereignty",
+                badgeBg: "#1e3a8a",
+                badgeColor: "#93c5fd",
+                title: "Full User Agency: Digital Unplugging",
+                btnText: "Reset to Phase I: Algorithmic Inundation",
+                btnBg: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                pointerLeft: "66.66%",
+                pointerBg: "#3b82f6",
+                posterSrc: "./phase3.jpg",
+                audioSrc: "./audio3.mp3",
+                showCuration: false,
+                theories: [
+                    { title: "Full Customization (Sundar & Marathe; Wu-Ouyang, 2026)", text: "Represents maximum human agency where algorithms are completely bypassed, allowing complete user control over interface and content." },
+                    { title: "Digital Sanctuary & Total Unplugging", text: "At maximum agency, the audience fully shapes their information environment, neutralizing algorithmic noise entirely." }
+                ]
+            }
+        };
+
+        let currentPhase = 1;
+        let emittedSignals = new Set();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const switchBtn = document.getElementById('switchBtn');
+            const statusBadge = document.getElementById('statusBadge');
+            const phaseTitle = document.getElementById('phaseTitle');
+            const theoryList = document.getElementById('theoryList');
+            const posterImg = document.getElementById('posterImg');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const spectrumPointer = document.getElementById('spectrumPointer');
+            const curationControls = document.getElementById('curationControls');
+            const signalLog = document.getElementById('signalLog');
+
+            const btn1 = document.getElementById('btn1');
+            const btn2 = document.getElementById('btn2');
+            const btn3 = document.getElementById('btn3');
+
+            const sigBtn1 = document.getElementById('sigBtn1');
+            const sigBtn2 = document.getElementById('sigBtn2');
+            const sigBtn3 = document.getElementById('sigBtn3');
+
+            function updateUI(phaseNum) {
+                currentPhase = phaseNum;
+                const data = phases[currentPhase];
+
+                posterImg.style.opacity = 0;
+                setTimeout(() => {
+                    posterImg.src = data.posterSrc;
+                    posterImg.style.opacity = 1;
+                }, 150);
+
+                audioPlayer.src
